@@ -1,0 +1,14 @@
+{
+  "name": "register",
+  "version": "1.0.0",
+  "description": "register function for chat app for WebSockets on API Gateway",
+  "main": "src/app.js",
+  "author": "Yury Slepianok",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.739.0"
+  }
+}
