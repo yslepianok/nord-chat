@@ -45,6 +45,6 @@ jobs:
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
       - name: Build and deploy frontend
         run: |
-          cd ../client
+          cd client
           sh deploy.sh ${{ secrets.SOCKETS_API_URL}}
 
