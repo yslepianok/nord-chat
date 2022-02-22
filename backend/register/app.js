@@ -7,6 +7,13 @@ const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: 
 
 const { USERS_TABLE_NAME, CONNECTIONS_TABLE_NAME } = process.env;
 
+const MESSAGE_TYPES = {
+  USER_INFO: 'userinfo',
+  USERS_LIST: 'userslist',
+  MESSAGE: 'message',
+  ERROR: 'error',
+}
+
 exports.handler = async event => {
   const { username } = JSON.parse(event.body);
   const { connectionId } = event.requestContext;
@@ -72,7 +79,14 @@ exports.handler = async event => {
   });
 
   try {
-    await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(user) }).promise();
+    const message = {
+      type: MESSAGE_TYPES.USER_INFO,
+      data: {
+        user,
+      }
+    }
+  
+    await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) }).promise();
   } catch (e) {
     if (e.statusCode === 410) {
       console.log(`Found stale connection, deleting ${connectionId}`);

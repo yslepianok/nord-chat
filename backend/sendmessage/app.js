@@ -4,6 +4,13 @@ const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: 
 
 const { CONNECTIONS_TABLE_NAME } = process.env;
 
+const MESSAGE_TYPES = {
+  USER_INFO: 'userinfo',
+  USERS_LIST: 'userslist',
+  MESSAGE: 'message',
+  ERROR: 'error',
+}
+
 exports.handler = async event => {
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
@@ -24,14 +31,19 @@ exports.handler = async event => {
     return { statusCode: 500, body: e.stack };
   }
 
-  console.log('123123123', currentUser);
-
   const { userId } = currentUser?.Item;
 
   if (!userId) {
-    const message = 'Only registered users could send messages';
-    await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify({ message }) }).promise();
-    return { statusCode: 200, body: message };
+    const errorMessage = 'Only registered users could send messages';
+    const message = {
+      type: MESSAGE_TYPES.USER_INFO,
+      data: {
+        errorMessage,
+      }
+    }
+
+    await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) }).promise();
+    return { statusCode: 200, body: errorMessage };
   }
 
   try {
@@ -42,10 +54,12 @@ exports.handler = async event => {
   }
 
   const { messageText } = JSON.parse(event.body);
-
   const message = {
-    userId,
-    messageText,
+    type: MESSAGE_TYPES.MESSAGE,
+    data: {
+      userId,
+      messageText,
+    },
   }
 
   const postCalls = connectionData.Items.map(async ({ connectionId }) => {
