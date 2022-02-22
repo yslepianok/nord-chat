@@ -20,3 +20,4 @@ API:
 
 CI/Infr:
 1. Move functions timeout to parameter
+2. Current CI/CD pipeline requires us to manually add socket api endpoint to CI config - and it's a problem, because we don't know this api on the stage of initial deployment. Best of all is to take it from previous step OR from environment (like now)
