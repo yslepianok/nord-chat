@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 
 const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: process.env.AWS_REGION });
+let apigwManagementApi;
 
 const { CONNECTIONS_TABLE_NAME } = process.env;
 
@@ -9,16 +10,67 @@ const MESSAGE_TYPES = {
   USERS_LIST: 'userslist',
   MESSAGE: 'message',
   ERROR: 'error',
+  USER_REGISTERED: 'userjoined',
+}
+
+const getAllConnections = async () => {
+  return ddb.scan({ TableName: CONNECTIONS_TABLE_NAME, ProjectionExpression: 'connectionId' }).promise();
+}
+
+const findUserByName = async (username) => {
+  const queryResponse = await ddb.get({
+    TableName: USERS_TABLE_NAME,
+    IndexName: 'username-index',
+    Limit: 1,
+    KeyConditionExpression: 'username = :username',
+    ExpressionAttributeValues: {
+      ':username': username
+    }
+  });
+
+  return queryResponse?.Items?.length
+    ? queryResponse.Items[0]
+    : null;
+}
+
+const sendOne = async (connectionId, message) => {
+  return apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) }).promise();
+}
+
+const sendAll = async (message) => {
+  try {
+    connectionData = await getAllConnections();
+  } catch (e) {
+    console.error(e);
+    return { statusCode: 500, body: e };
+  }
+
+  const promises = connectionData.Items.map(async ({ connectionId }) => {
+    try {
+      return apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) }).promise();
+    } catch (e) {
+      if (e.statusCode === 410) {
+        console.log(`Found stale connection, deleting ${connectionId}`);
+        await ddb.delete({ TableName: CONNECTIONS_TABLE_NAME, Key: { connectionId } }).promise();
+      } else {
+        console.error(e);
+        throw e;
+      }
+    }
+  });
+
+  return Promise.all(promises);
 }
 
 exports.handler = async event => {
-  const apigwManagementApi = new AWS.ApiGatewayManagementApi({
-    apiVersion: '2018-11-29',
-    endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
-  });
+  if (!apigwManagementApi) {
+    apigwManagementApi = new AWS.ApiGatewayManagementApi({
+      apiVersion: '2018-11-29',
+      endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
+    });
+  }
 
   const { connectionId } = event.requestContext;
-  let connectionData;
   let currentUser;
 
   try {
@@ -31,27 +83,20 @@ exports.handler = async event => {
     return { statusCode: 500, body: e.stack };
   }
 
-  const { userId } = currentUser?.Item;
-
-  if (!userId) {
+  if (!currentUser.Item) {
     const errorMessage = 'Only registered users could send messages';
     const message = {
-      type: MESSAGE_TYPES.USER_INFO,
+      type: MESSAGE_TYPES.ERROR,
       data: {
         errorMessage,
       }
     }
 
-    await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) }).promise();
+    await sendOne(connectionId, message);
     return { statusCode: 200, body: errorMessage };
   }
 
-  try {
-    connectionData = await ddb.scan({ TableName: CONNECTIONS_TABLE_NAME, ProjectionExpression: 'connectionId' }).promise();
-  } catch (e) {
-    console.error(e);
-    return { statusCode: 500, body: e };
-  }
+  const { userId } = currentUser?.Item;
 
   const { messageText } = JSON.parse(event.body);
   const message = {
@@ -62,22 +107,8 @@ exports.handler = async event => {
     },
   }
 
-  const postCalls = connectionData.Items.map(async ({ connectionId }) => {
-    try {
-      await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) }).promise();
-    } catch (e) {
-      if (e.statusCode === 410) {
-        console.log(`Found stale connection, deleting ${connectionId}`);
-        await ddb.delete({ TableName: CONNECTIONS_TABLE_NAME, Key: { connectionId } }).promise();
-      } else {
-        console.error(e);
-        throw e;
-      }
-    }
-  });
-
   try {
-    await Promise.all(postCalls);
+    await sendAll(message);
   } catch (e) {
     console.error(e);
     return { statusCode: 500, body: e.stack };

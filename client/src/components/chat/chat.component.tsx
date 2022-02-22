@@ -1,9 +1,9 @@
-import { Container, ListGroup, Row } from "react-bootstrap";
+import { Container, ListGroup, ListGroupItem, Row } from "react-bootstrap";
 import { ChatInput } from "./chat-input.component";
-import { ChatSocketService, Message, MESSAGE_TYPES } from '../../services/chat.service';
+import { ChatSocketService } from '../../services/chat.service';
 
 import { useEffect, useState } from "react";
-import { ListGroupItem } from "react-bootstrap";
+import { Message, MESSAGE_TYPES } from "../../types";
 
 export function Chat() {
   const chatSocketService = ChatSocketService.getInstance();

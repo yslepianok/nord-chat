@@ -5,11 +5,15 @@ const AWS = require('aws-sdk');
 
 const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: process.env.AWS_REGION });
 
+const { CONNECTIONS_TABLE_NAME } = process.env;
+
 exports.handler = async event => {
+  const { connectionId } = event.requestContext;
+
   const putParams = {
-    TableName: process.env.CONNECTIONS_TABLE_NAME,
+    TableName: CONNECTIONS_TABLE_NAME,
     Item: {
-      connectionId: event.requestContext.connectionId
+      connectionId,
     }
   };
 

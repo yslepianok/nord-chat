@@ -1,7 +1,7 @@
 What needs to be done:
 
-1. Dig into API, tune the sam package
-2. Add UI that will work with plain websockets
+1. + Dig into API, tune the sam package
+2. + Add UI that will work with plain websockets
 3. Github actions setup
 3.1. sam build and sam deploy package
 3.2. build and deploy for UI app
@@ -12,9 +12,9 @@ What needs to be done:
 
 
 API:
-1. rework api to have both sockets and normal lambdas
-2. register should be the normal lambda api
-3. cloudfront distribution should have URL that will lead to API gateway
+1. Create a common socket-sender service and save in a shared(between other lambdas) level
+2. + register should be the normal lambda api
+3. 
 
 4. In future - add active/inactive users logic
 

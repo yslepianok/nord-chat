@@ -1,59 +1,27 @@
-export type Message = {
-  userId: string | null;
-  messageText: string;
-  arrivedAt: Date;
-}
-
-export type User = {
-  userId: string;
-  username: string;
-}
-
-export const MESSAGE_TYPES = {
-  USER_INFO: 'userinfo',
-  USERS_LIST: 'userslist',
-  MESSAGE: 'message',
-  ERROR: 'error',
-}
+import {
+  Message,
+  MESSAGE_TYPES,
+  SocketMessage,
+  SocketMessageErrorPayload,
+  SocketMessageMessagePayload,
+  SocketMessageUserInfoPayload,
+  SocketMessageUsersListPayload,
+  User,
+} from "../types";
 
 const SOCKET_ROUTES = {
   REGISTER: 'register',
   SEND_MESSAGE: 'sendmessage',
 }
-
-type SocketMessageUserInfoPayload = {
-  user: User;
-};
-
-type SocketMessageUsersListPayload = {
-  users: User[];
-}
-
-type SocketMessageMessagePayload = {
-  userId: string;
-  messageText: string;
-}
-
-type SocketMessageErrorPayload = {
-  errorMessage: string;
-}
-
-// This one describes what we receive by sockets
-export type SocketMessage = {
-  type: string;
-  data: SocketMessageUserInfoPayload
-      | SocketMessageUsersListPayload
-      | SocketMessageMessagePayload
-      | SocketMessageErrorPayload;
-}
-
 export class ChatSocketService {
-  private socket: WebSocket;
-  private eventCallbacks: Map<string, (() => void)[]>
   private static instance: ChatSocketService;
-  public messages: Message[];
-  public users: User[];
-  public currentUser: User | null;
+
+  private socket: WebSocket;
+  private eventCallbacks = new Map<string, (() => void)[]>();
+
+  public messages: Message[] = [];
+  public users: User[] = [];
+  public currentUser: User | null = null;
 
   static getInstance() {
     if (!ChatSocketService.instance) {
@@ -64,7 +32,7 @@ export class ChatSocketService {
   }
 
   public register(username: string) {
-    this.socket.send(JSON.stringify({ 
+    this.socket.send(JSON.stringify({
       action: SOCKET_ROUTES.REGISTER,
       username,
     }));
@@ -86,10 +54,6 @@ export class ChatSocketService {
   }
 
   private constructor() {
-    this.messages = [];
-    this.users = [];
-    this.currentUser = null;
-
     const endpoint = process.env.REACT_APP_SOCKET_API_URL;
 
     console.log('Endpoint: ', endpoint);
@@ -122,8 +86,19 @@ export class ChatSocketService {
     this.users = data.users;
   }
 
+  private handleUserRegistered = (data: SocketMessageUserInfoPayload) => {
+    const { user } = data;
+    console.log('user joined: ', user);
+    this.users.push(user);
+  }
+
   private handleMessage = (data: SocketMessageMessagePayload) => {
-    this.messages.push(data as Message);
+    const { userId, messageText } = data;
+    this.messages.push({
+      userId,
+      messageText,
+      arrivedAt: new Date(),
+    });
   }
 
   private handleError = (data: SocketMessageErrorPayload) => {
@@ -142,6 +117,9 @@ export class ChatSocketService {
         break;
       case MESSAGE_TYPES.MESSAGE:
         this.handleMessage(data as SocketMessageMessagePayload);
+        break;
+      case MESSAGE_TYPES.USER_REGISTERED:
+        this.handleUserRegistered(data as SocketMessageUserInfoPayload);
         break;
       case MESSAGE_TYPES.ERROR:
       default:
