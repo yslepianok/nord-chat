@@ -1,4 +1,4 @@
-import { Container, ListGroup, ListGroupItem, Row } from "react-bootstrap";
+import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { ChatSocketService } from '../../services/chat.service';
 import { useEffect, useState } from "react";
 import { MESSAGE_TYPES, User } from "../../types";
