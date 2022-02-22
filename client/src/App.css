@@ -1,6 +1,10 @@
 .App {
   text-align: center;
-  min-height: 100vh;
+  width: 1000px;
+  background-color: rgb(126, 225, 255);
+  padding: 50px;
+  margin: 70px auto;
+  border: 1px solid black;
 }
 
 .App-logo {
@@ -38,14 +42,55 @@
   }
 }
 
-.mt-50 {
-  margin-top: 50px !important;
+.list-group {
+  border-radius: 0%;
 }
 
-.taligh-left {
-  text-align: left;
+.list-group-item:first-child {
+  margin-top: 0;
 }
 
-.taligh-right {
-  text-align: right;
+.list-group {
+  border-radius: 0%;
+}
+
+.list-group-item:first-child {
+  margin-top: 0;
+}
+
+.btn{
+  border-radius: 0%;
+  background-color: lightgrey;
+  border: 1px solid black;
+  border-top: none;
+}
+
+.row>*{
+  padding: 0;
+}
+
+.list-group-item{
+  border: 1px solid black !important;
+  margin-top: 3px;
+}
+
+.min-height{
+  border: 1px solid black;
+  min-height: 400px;
+  padding: 25px;
+  background-color: rgb(255, 255, 255);
+}
+.offset{
+  padding: 0;
+ }
+
+ .form-control{
+  padding: 15px;
+  border-radius: 0%;
+  border: 1px solid black;
+  border-top: none;
+}
+
+.align-self-end{
+  margin-top: 10px;
 }

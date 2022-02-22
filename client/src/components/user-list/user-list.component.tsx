@@ -19,31 +19,26 @@ export function UserList() {
   useEffect(() => {
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_REGISTERED, refreshUsers);
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_INFO, refreshCurrentUser);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   console.log(users);
 
   return (
-    <Container>
-      <Row>
-        <ListGroup>
-          {
-            users.map((user: User, index) => {
-              const { id, username } = user;
+    <ListGroup>
+      {
+        users.map((user: User, index) => {
+          const { id, username } = user;
 
-              return <ListGroupItem key={index}>
-                {
-                  id === currentUser?.id
-                    ? `${username} (you)`
-                    : username
-                }
-              </ListGroupItem>
-            })
-          }
-        </ListGroup>
-      </Row>
-      
-    </Container>
+          return <ListGroupItem key={index}>
+            {
+              id === currentUser?.id
+                ? `${username} (you)`
+                : username
+            }
+          </ListGroupItem>
+        })
+      }
+    </ListGroup>
   )
 }

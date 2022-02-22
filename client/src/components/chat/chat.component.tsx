@@ -35,25 +35,30 @@ export function Chat() {
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_INFO, refreshUser);
     expandMessages();
     refreshUser();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Container>
       <Row>
-        <ListGroup>
+        <ListGroup className="min-height">
           {
             messagesExpanded.map(({ message, user }, index) => {
               const isOwnMessage = user?.id === currentUser?.id;
               return (
-                <ListGroupItem key={index} className={isOwnMessage ? 'taligh-left' : 'taligh-right'}>{user?.username || 'anonymous'}: {message.messageText}</ListGroupItem>
+                <ListGroupItem
+                  key={index}
+                  className={isOwnMessage ? 'align-self-end' : 'align-self-start'}
+                >
+                  {user?.username || 'anonymous'}: {message.messageText}
+                </ListGroupItem>
               );
             })
           }
         </ListGroup>
       </Row>
       <Row>
-        <ChatInput/>
+        <ChatInput />
       </Row>
     </Container>
   );

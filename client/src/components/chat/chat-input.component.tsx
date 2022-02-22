@@ -7,8 +7,8 @@ const chatSocketService = ChatSocketService.getInstance();
 export function ChatInput() {
 
   const [message, changeMessage] = useState('');
-  
-  const handleSend = async (e: any) => {
+
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -21,14 +21,16 @@ export function ChatInput() {
   }
 
   return (
-    <InputGroup>
-      <Form.Control
-        type="text"
-        placeholder="Enter message"
-        value={message}
-        onChange={handleChange}
-      />
-      <Button variant="outline-secondary" onClick={handleSend}>Send</Button>
-    </InputGroup>
+    <Form onSubmit={handleSubmit}>
+      <InputGroup className="offset">
+        <Form.Control
+          type="text"
+          placeholder="Enter message"
+          value={message}
+          onChange={handleChange}
+        />
+        <Button variant="outline-secondary" type='submit'>Send</Button>
+      </InputGroup>
+    </Form>
   );
 }
