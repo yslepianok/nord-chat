@@ -22,6 +22,12 @@ Parameters:
     ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
 
 Resources:
+  UIBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: nord-chat-ui
+      WebsiteConfiguration:
+        IndexDocument: index.html
   NordChatApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -169,7 +175,7 @@ Resources:
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: onconnect/
+      CodeUri: backend/onconnect/
       Handler: app.handler
       MemorySize: 256
       Runtime: nodejs14.x
@@ -190,7 +196,7 @@ Resources:
   OnDisconnectFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ondisconnect/
+      CodeUri: backend/ondisconnect/
       Handler: app.handler
       MemorySize: 256
       Runtime: nodejs14.x
@@ -211,7 +217,7 @@ Resources:
   SendMessageFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: sendmessage/
+      CodeUri: backend/sendmessage/
       Handler: app.handler
       MemorySize: 256
       Runtime: nodejs14.x
@@ -242,7 +248,7 @@ Resources:
   RegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: register/
+      CodeUri: backend/register/
       Handler: app.handler
       MemorySize: 256
       Runtime: nodejs14.x

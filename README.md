@@ -7,4 +7,6 @@ sam deploy
 
 Frontend:
 cd client
-sh deploy.sh <SOCKET_ENDPOINT_URL>
+npm start
+
+Configured CI/CD pipeline
