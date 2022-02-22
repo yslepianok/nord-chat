@@ -35,6 +35,7 @@ export function Chat() {
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_INFO, refreshUser);
     expandMessages();
     refreshUser();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

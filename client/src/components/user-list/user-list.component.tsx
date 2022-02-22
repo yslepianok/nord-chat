@@ -19,6 +19,7 @@ export function UserList() {
   useEffect(() => {
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_REGISTERED, refreshUsers);
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_INFO, refreshCurrentUser);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   console.log(users);

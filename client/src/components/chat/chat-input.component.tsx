@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Form, InputGroup } from "react-bootstrap";
 import { ChatSocketService } from '../../services/chat.service';
 
 const chatSocketService = ChatSocketService.getInstance();
