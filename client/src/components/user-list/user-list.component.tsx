@@ -17,7 +17,7 @@ export function UserList() {
   };
 
   useEffect(() => {
-    chatSocketService.subscribeUpdates(MESSAGE_TYPES.USERS_LIST, refreshUsers);
+    chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_REGISTERED, refreshUsers);
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_INFO, refreshCurrentUser);
   }, []);
 
@@ -25,21 +25,24 @@ export function UserList() {
 
   return (
     <Container>
-      <ListGroup>
-        {
-          users.map((user: User, index) => {
-            const { userId, username } = user;
+      <Row>
+        <ListGroup>
+          {
+            users.map((user: User, index) => {
+              const { id, username } = user;
 
-            return <ListGroupItem key={index}>
-              {
-                userId === currentUser?.userId
-                  ? `${username} (you)`
-                  : username
-              }
-            </ListGroupItem>
-          })
-        }
-      </ListGroup>
+              return <ListGroupItem key={index}>
+                {
+                  id === currentUser?.id
+                    ? `${username} (you)`
+                    : username
+                }
+              </ListGroupItem>
+            })
+          }
+        </ListGroup>
+      </Row>
+      
     </Container>
   )
 }

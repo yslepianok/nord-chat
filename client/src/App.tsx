@@ -8,7 +8,7 @@ import { Chat } from './components/chat/chat.component';
 
 function App() {
   return (
-    <div className="App">
+    <div className="App mt-50">
       <Container>
         <Row>
           <Col xs={3}>

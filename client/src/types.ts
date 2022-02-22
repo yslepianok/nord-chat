@@ -5,7 +5,7 @@ export type Message = {
 }
 
 export type User = {
-  userId: string;
+  id: string;
   username: string;
 }
 
@@ -40,4 +40,9 @@ export type SocketMessage = {
   | SocketMessageUsersListPayload
   | SocketMessageMessagePayload
   | SocketMessageErrorPayload;
+}
+
+export type MessageExpanded = {
+  message: Message;
+  user: User | undefined;
 }

@@ -72,13 +72,13 @@ export class ChatSocketService {
 
     // TODO: remove when registration is done
     this.socket.addEventListener('open', () => {
-      this.register('yury');
+      const randomId = Math.ceil(Math.random() * 1000);
+      this.register(`user-${randomId}`);
     });
   }
 
   private handleUserInfo = (data: SocketMessageUserInfoPayload) => {
     const { user } = data;
-    console.log('Current user: ', user);
     this.currentUser = user;
   }
 
@@ -88,7 +88,6 @@ export class ChatSocketService {
 
   private handleUserRegistered = (data: SocketMessageUserInfoPayload) => {
     const { user } = data;
-    console.log('user joined: ', user);
     this.users.push(user);
   }
 

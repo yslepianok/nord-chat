@@ -3,18 +3,38 @@ import { ChatInput } from "./chat-input.component";
 import { ChatSocketService } from '../../services/chat.service';
 
 import { useEffect, useState } from "react";
-import { Message, MESSAGE_TYPES } from "../../types";
+import { Message, MessageExpanded, MESSAGE_TYPES, User } from "../../types";
 
 export function Chat() {
+  const [messagesExpanded, updateMessages] = useState<MessageExpanded[]>([]);
+  const [currentUser, updateCurrentUser] = useState<User | null>(null);
+
+  const expandMessages = () => {
+    const { users, messages } = chatSocketService;
+
+    const expanded: MessageExpanded[] = messages.map((message: Message) => ({
+      message,
+      user: users.find((user) => user.id === message.userId)
+    }));
+
+    updateMessages(expanded);
+  }
+
   const chatSocketService = ChatSocketService.getInstance();
-  const [messages, updateMessages] = useState([...chatSocketService.messages]);
 
   const refreshMessages = (): void => {
-    updateMessages([...chatSocketService.messages]);
+    expandMessages();
+  }
+
+  const refreshUser = (): void => {
+    updateCurrentUser(chatSocketService.currentUser);
   }
 
   useEffect(() => {
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.MESSAGE, refreshMessages);
+    chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_INFO, refreshUser);
+    expandMessages();
+    refreshUser();
   }, []);
 
   return (
@@ -22,9 +42,10 @@ export function Chat() {
       <Row>
         <ListGroup>
           {
-            messages.map((message: Message, index) => {
+            messagesExpanded.map(({ message, user }, index) => {
+              const isOwnMessage = user?.id === currentUser?.id;
               return (
-                <ListGroupItem key={index}>{message.messageText}</ListGroupItem>
+                <ListGroupItem key={index} className={isOwnMessage ? 'taligh-left' : 'taligh-right'}>{user?.username || 'anonymous'}: {message.messageText}</ListGroupItem>
               );
             })
           }
