@@ -24,15 +24,24 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - uses: aws-actions/setup-sam@v1
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
 
       # Runs a single command using the runners shell
       - name: Build and deploy backend
         run: |
           cd backend
-          sam build
-          sam deploy
+          sam build --use-container
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
       - name: Build and deploy frontend
         run: |
           cd ../client
-          sh deploy.sh gzt5armz0d.execute-api.eu-central-1.amazonaws.com/Prod
+          sh deploy.sh ${{ secrets.SOCKETS_API_URL}}
 
