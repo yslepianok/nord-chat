@@ -20,10 +20,6 @@ export type SocketMessageUserInfoPayload = {
   user: User;
 };
 
-export type SocketMessageUsersListPayload = {
-  users: User[];
-}
-
 export type SocketMessageMessagePayload = {
   user: User;
   messageText: string;
@@ -36,7 +32,6 @@ export type SocketMessageErrorPayload = {
 export type SocketMessage = {
   type: string;
   data: SocketMessageUserInfoPayload
-  | SocketMessageUsersListPayload
   | SocketMessageMessagePayload
   | SocketMessageErrorPayload;
 }

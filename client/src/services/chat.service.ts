@@ -5,7 +5,6 @@ import {
   SocketMessageErrorPayload,
   SocketMessageMessagePayload,
   SocketMessageUserInfoPayload,
-  SocketMessageUsersListPayload,
   User,
 } from "../types";
 
