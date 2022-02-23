@@ -3,27 +3,16 @@ import { ChatInput } from "./chat-input.component";
 import { ChatSocketService } from '../../services/chat.service';
 
 import { useEffect, useState } from "react";
-import { Message, MessageExpanded, MESSAGE_TYPES, User } from "../../types";
+import { Message, MESSAGE_TYPES, User } from "../../types";
 
 export function Chat() {
-  const [messagesExpanded, updateMessages] = useState<MessageExpanded[]>([]);
+  const [messages, updateMessages] = useState<Message[]>([]);
   const [currentUser, updateCurrentUser] = useState<User | null>(null);
-
-  const expandMessages = () => {
-    const { users, messages } = chatSocketService;
-
-    const expanded: MessageExpanded[] = messages.map((message: Message) => ({
-      message,
-      user: users.find((user) => user.id === message.userId)
-    }));
-
-    updateMessages(expanded);
-  }
 
   const chatSocketService = ChatSocketService.getInstance();
 
   const refreshMessages = (): void => {
-    expandMessages();
+    updateMessages([...chatSocketService.messages]);
   }
 
   const refreshUser = (): void => {
@@ -33,7 +22,7 @@ export function Chat() {
   useEffect(() => {
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.MESSAGE, refreshMessages);
     chatSocketService.subscribeUpdates(MESSAGE_TYPES.USER_INFO, refreshUser);
-    expandMessages();
+    refreshMessages();
     refreshUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -43,14 +32,14 @@ export function Chat() {
       <Row>
         <ListGroup className="min-height">
           {
-            messagesExpanded.map(({ message, user }, index) => {
+            messages.map(({ messageText, user }, index) => {
               const isOwnMessage = user?.id === currentUser?.id;
               return (
                 <ListGroupItem
                   key={index}
                   className={isOwnMessage ? 'align-self-end' : 'align-self-start'}
                 >
-                  {user?.username || 'anonymous'}: {message.messageText}
+                  {user?.username || 'anonymous'}: {messageText}
                 </ListGroupItem>
               );
             })

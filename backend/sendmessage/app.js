@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: process.env.AWS_REGION });
 let apigwManagementApi;
 
-const { CONNECTIONS_TABLE_NAME } = process.env;
+const { CONNECTIONS_TABLE_NAME, USERS_TABLE_NAME } = process.env;
 
 const MESSAGE_TYPES = {
   USER_INFO: 'userinfo',
@@ -17,8 +17,32 @@ const getAllConnections = async () => {
   return ddb.scan({ TableName: CONNECTIONS_TABLE_NAME, ProjectionExpression: 'connectionId' }).promise();
 }
 
-const findUserByName = async (username) => {
+const findConnectionUser = async (connectionId) => {
   const queryResponse = await ddb.get({
+    TableName: CONNECTIONS_TABLE_NAME,
+    Key: { connectionId },
+    ProjectionExpression: 'connectionId, userId',
+  }).promise();
+
+  return queryResponse?.Item
+    ? queryResponse.Item
+    : null;
+}
+
+const findUser = async (id) => {
+  const queryResponse = await ddb.get({
+    TableName: USERS_TABLE_NAME,
+    Key: { id },
+    ProjectionExpression: 'id, username',
+  }).promise();
+
+  return queryResponse?.Item
+    ? queryResponse.Item
+    : null;
+}
+
+const findUserByName = async (username) => {
+  const queryResponse = await ddb.query({
     TableName: USERS_TABLE_NAME,
     IndexName: 'username-index',
     Limit: 1,
@@ -26,7 +50,7 @@ const findUserByName = async (username) => {
     ExpressionAttributeValues: {
       ':username': username
     }
-  });
+  }).promise();
 
   return queryResponse?.Items?.length
     ? queryResponse.Items[0]
@@ -74,16 +98,12 @@ exports.handler = async event => {
   let currentUser;
 
   try {
-    currentUser = await ddb.get({
-      TableName: CONNECTIONS_TABLE_NAME,
-      Key: { connectionId },
-      ProjectionExpression: 'connectionId, userId',
-    }).promise();
+    currentUser = await findConnectionUser(connectionId);
   } catch (e) {
     return { statusCode: 500, body: e.stack };
   }
 
-  if (!currentUser.Item) {
+  if (!currentUser) {
     const errorMessage = 'Only registered users could send messages';
     const message = {
       type: MESSAGE_TYPES.ERROR,
@@ -96,13 +116,15 @@ exports.handler = async event => {
     return { statusCode: 200, body: errorMessage };
   }
 
-  const { userId } = currentUser?.Item;
+  const { userId } = currentUser;
+
+  const dbUser = await findUser(userId);
 
   const { messageText } = JSON.parse(event.body);
   const message = {
     type: MESSAGE_TYPES.MESSAGE,
     data: {
-      userId,
+      user: dbUser,
       messageText,
     },
   }

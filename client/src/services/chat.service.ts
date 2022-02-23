@@ -20,7 +20,7 @@ export class ChatSocketService {
   private eventCallbacks = new Map<string, (() => void)[]>();
 
   public messages: Message[] = [];
-  public users: User[] = [];
+  public users = new Map<string, User>();
   public currentUser: User | null = null;
 
   static getInstance() {
@@ -82,19 +82,22 @@ export class ChatSocketService {
     this.currentUser = user;
   }
 
-  private handleUsersList = (data: SocketMessageUsersListPayload) => {
-    this.users = data.users;
-  }
-
   private handleUserRegistered = (data: SocketMessageUserInfoPayload) => {
     const { user } = data;
-    this.users.push(user);
+    this.users.set(user.id, user);
   }
 
   private handleMessage = (data: SocketMessageMessagePayload) => {
-    const { userId, messageText } = data;
+    const { user, messageText } = data;
+
+    if (!this.users.has(user.id)) {
+      console.log('Adding new user to set');
+      this.users.set(user.id, user);
+      this.notifySubscribers(MESSAGE_TYPES.USER_REGISTERED);
+    }
+    
     this.messages.push({
-      userId,
+      user,
       messageText,
       arrivedAt: new Date(),
     });
@@ -104,15 +107,18 @@ export class ChatSocketService {
     console.error(data);
   }
 
+  private notifySubscribers = (eventType: string) => {
+    if (this.eventCallbacks.has(eventType)) {
+      this.eventCallbacks.get(eventType)?.forEach((cb) => cb());
+    }
+  }
+
   private routeMessage = (message: SocketMessage) => {
     console.log('Message in router: ', message);
     const { type, data } = message;
     switch (type) {
       case MESSAGE_TYPES.USER_INFO:
         this.handleUserInfo(data as SocketMessageUserInfoPayload);
-        break;
-      case MESSAGE_TYPES.USERS_LIST:
-        this.handleUsersList(data as SocketMessageUsersListPayload);
         break;
       case MESSAGE_TYPES.MESSAGE:
         this.handleMessage(data as SocketMessageMessagePayload);
@@ -126,9 +132,7 @@ export class ChatSocketService {
         break;
     };
 
-    if (this.eventCallbacks.has(message.type)) {
-      this.eventCallbacks.get(message.type)?.forEach((cb) => cb());
-    }
+    this.notifySubscribers(type);
   }
 }
 

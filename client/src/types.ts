@@ -1,17 +1,16 @@
-export type Message = {
-  userId: string | null;
-  messageText: string;
-  arrivedAt: Date;
-}
-
 export type User = {
   id: string;
   username: string;
 }
 
+export type Message = {
+  user: User;
+  messageText: string;
+  arrivedAt: Date;
+}
+
 export const MESSAGE_TYPES = {
   USER_INFO: 'userinfo',
-  USERS_LIST: 'userslist',
   MESSAGE: 'message',
   ERROR: 'error',
   USER_REGISTERED: 'userregistered',
@@ -26,7 +25,7 @@ export type SocketMessageUsersListPayload = {
 }
 
 export type SocketMessageMessagePayload = {
-  userId: string;
+  user: User;
   messageText: string;
 }
 
@@ -40,9 +39,4 @@ export type SocketMessage = {
   | SocketMessageUsersListPayload
   | SocketMessageMessagePayload
   | SocketMessageErrorPayload;
-}
-
-export type MessageExpanded = {
-  message: Message;
-  user: User | undefined;
 }

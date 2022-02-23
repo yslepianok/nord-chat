@@ -5,11 +5,11 @@ import { MESSAGE_TYPES, User } from "../../types";
 
 export function UserList() {
   const chatSocketService = ChatSocketService.getInstance();
-  const [users, updateUsers] = useState([...chatSocketService.users]);
+  const [users, updateUsers] = useState<User[]>(Array.from(chatSocketService.users.values()));
   const [currentUser, updateCurrentUser] = useState(chatSocketService.currentUser);
 
   const refreshUsers = (): void => {
-    updateUsers([...chatSocketService.users]);
+    updateUsers(Array.from(chatSocketService.users.values()));
   };
 
   const refreshCurrentUser = (): void => {

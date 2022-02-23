@@ -21,7 +21,7 @@ const getAllConnections = async () => {
 }
 
 const findUserByName = async (username) => {
-  const queryResponse = await ddb.get({
+  const queryResponse = await ddb.query({
     TableName: USERS_TABLE_NAME,
     IndexName: 'username-index',
     Limit: 1,
@@ -29,7 +29,7 @@ const findUserByName = async (username) => {
     ExpressionAttributeValues: {
       ':username': username
     }
-  });
+  }).promise();
 
   return queryResponse?.Items?.length
     ? queryResponse.Items[0]
